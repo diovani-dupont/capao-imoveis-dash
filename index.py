@@ -1,0 +1,67 @@
+import pandas as pd
+import numpy as np
+import plotly.express as px
+from dash.dependencies import Input, Output
+from _controllers import *
+from _histogram import *
+from _map import *
+import joblib
+
+
+df_geo_capao = pd.read_csv('dataset/df_geo_capao.csv')
+mean_lat = df_geo_capao['LATITUDE'].mean()
+mean_long = df_geo_capao['LONGITUDE'].mean()
+
+app.layout = dbc.Container(
+    children=[
+        dbc.Row([
+            dbc.Col([controllers], md=3),
+            dbc.Col([mapi, hist], md=9),
+        ])
+    ], fluid=True, )
+
+
+@app.callback([Output('hist-graph', 'figure'), Output('map-graph', 'figure')],
+              [Input('location-dropdown', 'value'),
+               Input('slider-square-size', 'value'),
+               Input('dropdown-color', 'value')])
+def update_hist(location, square_size, color_map):
+    if location is None:
+        df_intermediate = df_geo_capao.copy()
+    else:
+        df_intermediate = df_geo_capao[df_geo_capao['BAIRRO'] == location] if location != 0 else df_geo_capao.copy()
+        size_limit = slider_size[int(square_size)] if square_size is not None else df_geo_capao["AREA"].max()
+        df_intermediate = df_intermediate[df_intermediate["AREA"] <= size_limit]
+
+    # Restante da função
+
+    hist_fig = px.histogram(df_intermediate, x=color_map, opacity=0.75)
+    hist_layout = go.Layout(
+        margin=go.layout.Margin(l=10, r=0, t=0, b=50),
+        showlegend=False,
+        template='plotly_dark',
+        paper_bgcolor="rgba(0,0,0,0)")
+    hist_fig.layout = hist_layout
+
+    px.set_mapbox_access_token(open('keys/mapbox_key').read())
+
+    colors_rgb = px.colors.sequential.Rainbow
+    df_quantiles = df_geo_capao[color_map].quantile(np.linspace(0, 1, len(colors_rgb))).to_frame()
+    df_quantiles = (df_quantiles - df_quantiles.min()) / (df_quantiles.max() - df_quantiles.min())
+    df_quantiles["colors"] = colors_rgb
+    df_quantiles.set_index(color_map, inplace=True)
+
+    color_scale = [[i, j] for i, j in df_quantiles['colors'].items()]
+
+    map_fig = px.scatter_mapbox(df_intermediate, lat='LATITUDE', lon='LONGITUDE',
+                                color=color_map, size="AREA", size_max=15, zoom=10, opacity=0.4)
+    map_fig.update_coloraxes(colorscale=color_scale)
+    map_fig.update_layout(mapbox=dict(center=go.layout.mapbox.Center(lat=mean_lat, lon=mean_long)),
+                          template='plotly_dark', paper_bgcolor='rgba(0,0,0,0)',
+                          margin=go.layout.Margin(l=10, r=10, t=10, b=10), )
+
+    return hist_fig, map_fig
+
+
+if __name__ == '__main__':
+    app.run_server(debug=True)
