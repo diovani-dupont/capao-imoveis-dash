@@ -5,3 +5,5 @@ Exemplo de uma aplicação criada utilizando Python. Nela é possível fazer an�
 Utilizei uma base de dados da cidade de Capão da Canoa/RS.
 
 Para a construção deste projeto desde a concepção da ideia até o layout finalizado, foram utilizados Python e as bibliotecas Dash, Plotly e Pandas.
+
+![image](https://user-images.githubusercontent.com/109030838/227393112-2885b18d-e12a-4fca-971f-fb95240b64ce.png)
