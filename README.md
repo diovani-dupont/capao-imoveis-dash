@@ -1,4 +1,4 @@
-# capao-imoveis-dash
+# Capão da Canoa Sales é um dashboard de análise de vendas para o mercado imobiliário
 
 Exemplo de uma aplicação criada utilizando Python. Nela é possível fazer análises rápidas e intuitivas do mercado imobiliário, verificando quais são as regiões de maior procura e onde poderíamos ter boas oportunidades de comprar e vender um imóvel. Tudo isso através de um Dashboard com uma estética elegante e altamente profissional.
 
